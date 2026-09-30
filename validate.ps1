@@ -2,9 +2,9 @@ param(
     # 4diac IDE 3.3 (this install was updated in place from 3.2.1); its export must match the
     # FORTE release in build-runtime.ps1 (-ForteTag).
     [string]$Ide = 'C:\Users\marti\Downloads\4diac-ide_3.2.1-win32.win32.x86_64\4diac-ide\4diac-idec.exe',
-    # 4diac project folder under 4diac/ (also its .sys name), its type manifest, the export
+    # 4diac project folder (its name is also the .sys name), its type manifest, the export
     # folder the FBE config builds (FBE_EXTERNAL_MODULES_DIR) and the exported CMake module.
-    [Parameter(Mandatory)] [string]$Project,
+    [Parameter(Mandatory)] [string]$ProjectDir,
     [Parameter(Mandatory)] [string]$Manifest,
     [Parameter(Mandatory)] [string]$Export,
     [Parameter(Mandatory)] [string]$Module,
@@ -15,7 +15,8 @@ $ErrorActionPreference = 'Stop'
 $cache = Join-Path $PSScriptRoot '.cache'
 $workspace = Join-Path $cache ('validation-' + [guid]::NewGuid().ToString('N'))
 $export = $Export
-$projectDir = Join-Path (Split-Path $PSScriptRoot) $Project
+$projectDir = (Resolve-Path -LiteralPath $ProjectDir).Path
+$Project = Split-Path -Leaf $projectDir
 $log = Join-Path $cache "validate-$Project.log"
 $typeList = Get-Content -Raw -LiteralPath $Manifest | ConvertFrom-Json
 New-Item -ItemType Directory -Force -Path $cache | Out-Null
