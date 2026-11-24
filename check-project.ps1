@@ -1,5 +1,5 @@
 param(
-    # A 4diac project folder (its name is also the .sys name), e.g. cell/control/FillingModule.
+    # A 4diac project folder (its name is also the .sys name), e.g. aseptic-line's cell/control/FillingModule.
     [Parameter(Mandatory)] [string]$ProjectDir,
     # The 4diac IDE 3.3; elsewhere set FORDIAC_IDE to its 4diac-idec.exe.
     [string]$Ide = $(if ($env:FORDIAC_IDE) { $env:FORDIAC_IDE } else { 'C:\Users\marti\Downloads\4diac-ide_3.2.1-win32.win32.x86_64\4diac-ide\4diac-idec.exe' })
@@ -7,7 +7,7 @@ param(
 # Import a 4diac project headless and run the IDE's own checks: the type library (every type
 # loads and compiles; the IDE treats ST warnings as failures) and the system (connections, and
 # blocks that overlap in an application or a resource view). Nothing is exported or built; for
-# that, runtime/build-modules.ps1 runs validate.ps1. Resource views always report collisions:
+# that, build-modules.ps1 runs validate.ps1. Resource views always report collisions:
 # the IDE draws mapped blocks there at their positions inside their groups.
 $ErrorActionPreference = 'Stop'
 $projectDir = (Resolve-Path -LiteralPath $ProjectDir).Path

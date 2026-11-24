@@ -1,18 +1,18 @@
 param(
-    # Where the kit's folder and zip go (runtime/dist is not tracked).
+    # Where the kit's folder and zip go (dist is not tracked).
     [string]$Out = (Join-Path $PSScriptRoot 'dist'),
     # Leave out the lab's exported modules (ModLib, Filling, Stoppering, Filler); a FORTE built from the
     # kit then cannot run the lab's module programs.
     [switch]$NoLabModules,
     # Leave out the base images (alpine, busybox for arm64); the Pi then pulls them from Docker Hub.
     [switch]$NoImages,
-    # The lab's module projects (cell/control) that go into projects/, as committed, to start from.
+    # The lab's module projects (the aseptic line's cell/control, beside this repository) that go into projects/, as committed, to start from.
     [string[]]$Projects = @('FillingModule', 'StopperingModule', 'CappingModule')
 )
 # A kit for building FORTE with one's own block types without this repository: the build scripts,
 # FBE configurations, FORTE patches and the lab's exported modules (from the last build-modules.ps1),
 # the lab's module projects (projects/) and the lab's FORTE (bin/) with kit/README.md. It builds the same FORTE
-# as runtime/bin/forte-aarch64 plus the new types.
+# as bin/forte-aarch64 plus the new types.
 # For the Pi it holds what install.sh would download: the container files (pi/) and the base
 # images (images/), which kit/install-pi.ps1 copies over SSH; then the Pi needs no internet.
 $ErrorActionPreference = 'Stop'
@@ -36,7 +36,7 @@ $unix = @{ (Join-Path $PSScriptRoot 'install.sh') = Join-Path $kit 'install.sh' 
 foreach ($file in 'Dockerfile', 'compose.yaml', '.dockerignore') { $unix[(Join-Path $deploy $file)] = Join-Path $kit "pi\$file" }
 foreach ($from in $unix.Keys) { [IO.File]::WriteAllText($unix[$from], [IO.File]::ReadAllText($from).Replace("`r`n", "`n")) }
 if (!$NoImages) {
-    # The base images of deploy/pi (Dockerfile FROM, compose.yaml's manifest service), for arm64.
+    # The base images of the deploy repository's pi/ (Dockerfile FROM, compose.yaml's manifest service), for arm64.
     $images = Join-Path $kit 'images'
     New-Item -ItemType Directory -Force -Path $images | Out-Null
     $ErrorActionPreference = 'Continue'
@@ -64,7 +64,7 @@ if (!$NoLabModules) {
 }
 if ($Projects) {
     # From the last commit, not the working copy: what is in the kit is what the repository has.
-    $repo = Split-Path -Parent $PSScriptRoot
+    $repo = Join-Path (Split-Path -Parent $PSScriptRoot) 'aseptic-line'
     $folder = Join-Path $kit 'projects'
     New-Item -ItemType Directory -Force -Path $folder | Out-Null
     $ErrorActionPreference = 'Continue'

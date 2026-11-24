@@ -1,6 +1,6 @@
 param(
     # The Pi's login and address, e.g. pi@192.168.0.42. It already runs FORTE in Docker from ~/forte
-    # (runtime/install.sh or install-pi.ps1 did that once).
+    # (install.sh or install-pi.ps1 did that once).
     [Parameter(Mandatory)] [string]$Pi,
     # 4diac project folders whose block types go into FORTE (as for build-project.ps1).
     [string[]]$Project,

@@ -4,30 +4,32 @@
 # GPIO lines and PWM channels for it, and a clock that survives a restart. For a Raspberry Pi 4 or 5 with a 64-bit Linux (Raspberry Pi
 # OS, Ubuntu); the user who runs it needs sudo.
 #
-#   curl -fsSL https://raw.githubusercontent.com/AAUSmartProductionLab/iec61499-mgmt-py/main/runtime/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/AAU-AASPIRE/forte-runtime/main/install.sh | bash
 #
 # FORTE then runs as the container "forte" in ~/forte, restarts after a reboot, and loads the
-# program in ~/forte/boot/forte.fboot (empty at first: deploy one from a PC with deploy/pi.py
+# program in ~/forte/boot/forte.fboot (empty at first: deploy one from a PC with deploy's pi.py
 # module or modsync push). Management port 61499 (no authentication: lab network only),
 # OPC UA port 4840. Run the script again to update FORTE; the program is kept.
 #
-# Without internet: from the FORTE kit (runtime/make-kit.ps1; its install-pi.ps1 copies it to the
+# Without internet: from the FORTE kit (make-kit.ps1; its install-pi.ps1 copies it to the
 # Pi over SSH), FORTE, the container files and the base images come with the script. Only Docker
 # itself, when missing, and fake-hwclock (optional) need a download.
 #
 # Settings (environment variables):
 #   FORTE_FILE  a FORTE binary already on this machine, instead of the repository's
-#   FORTE_URL   where to download it (default: runtime/bin/forte-aarch64 of the repository)
+#   FORTE_URL   where to download it (default: bin/forte-aarch64 of this repository)
 #   FORTE_DIR   install folder (default ~/forte)
 #   REF         branch or tag the files are taken from (default main)
 #   PWM         0: leave the boot configuration alone (default 1: enable the two PWM channels)
 set -euo pipefail
 
-REPO="${REPO:-AAUSmartProductionLab/iec61499-mgmt-py}"
+REPO="${REPO:-AAU-AASPIRE/forte-runtime}"
+DEPLOY_REPO="${DEPLOY_REPO:-AAU-AASPIRE/deploy}"      # the container files (pi/)
 REF="${REF:-main}"
 FORTE_DIR="${FORTE_DIR:-$HOME/forte}"
 RAW="https://raw.githubusercontent.com/$REPO/$REF"
-FORTE_URL="${FORTE_URL:-$RAW/runtime/bin/forte-aarch64}"
+DEPLOY_RAW="https://raw.githubusercontent.com/$DEPLOY_REPO/$REF"
+FORTE_URL="${FORTE_URL:-$RAW/bin/forte-aarch64}"
 PWM="${PWM:-1}"
 
 say() { printf '\033[1m==> %s\033[0m\n' "$*"; }
@@ -129,7 +131,7 @@ if [ "$PWM" = 1 ] && ! ls /sys/class/pwm/pwmchip* >/dev/null 2>&1; then
         reboot_needed=1                       # enabled before, not booted with yet
     else
         say "Enabling the PWM channels in $config"
-        printf '\n# IEC 61499 runtime (runtime/install.sh): PWM on GPIO18 and GPIO19\n[all]\ndtoverlay=pwm-2chan\n' \
+        printf '\n# IEC 61499 runtime (forte-runtime/install.sh): PWM on GPIO18 and GPIO19\n[all]\ndtoverlay=pwm-2chan\n' \
             | $SUDO tee -a "$config" >/dev/null
         reboot_needed=1
     fi
@@ -147,8 +149,8 @@ for file in Dockerfile compose.yaml .dockerignore; do
     elif [ -n "$here" ] && [ -f "$here/pi/$file" ]; then
         cp "$here/pi/$file" "$FORTE_DIR/$file"
     else
-        need_internet "deploy/pi/$file"
-        curl -fsSL "$RAW/deploy/pi/$file" -o "$FORTE_DIR/$file" || fail "cannot download deploy/pi/$file from $RAW"
+        need_internet "pi/$file of $DEPLOY_REPO"
+        curl -fsSL "$DEPLOY_RAW/pi/$file" -o "$FORTE_DIR/$file" || fail "cannot download pi/$file from $DEPLOY_RAW"
     fi
 done
 
@@ -169,7 +171,7 @@ else
     need_internet "FORTE"
     say "Downloading FORTE from $FORTE_URL"
     curl -fL --progress-bar "$FORTE_URL" -o "$FORTE_DIR/forte.new" || fail "cannot download FORTE from $FORTE_URL.
-    Copy a binary here and set FORTE_FILE (build: runtime/build-modules.ps1 -Config pi/modules-pi)."
+    Copy a binary here and set FORTE_FILE (build: build-modules.ps1 -Config pi/modules-pi)."
     if curl -fsSL "$FORTE_URL.sha256" -o "$FORTE_DIR/forte.sha256" 2>/dev/null; then
         verify "$FORTE_DIR/forte.new" "$FORTE_DIR/forte.sha256"
     fi
