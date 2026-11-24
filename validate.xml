@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Validate a 4diac project" default="validate">
+  <target name="validate">
+    <fordiac.importProject projectPath="${project.path}" />
+    <eclipse.incrementalBuild kind="full" />
+    <fordiac.checkTypeLibrary projectName="${project.name}" />
+    <fordiac.checkSystem systemPath="${project.name}/${project.name}.sys" />
+    <fordiac.exportProjectFBs projectName="${project.name}" exportDirectory="${export.path}" exportCMakeList="true" />
+  </target>
+</project>
