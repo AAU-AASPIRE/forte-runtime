@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/AAU-AASPIRE/forte-runtime/main/inst
 ```
 
 ```powershell
-.\build-modules.ps1                       # FORTE for this PC with every module (modgen from iec61499-skill-lib, the line's specs)
+.\build-modules.ps1                       # FORTE for this PC with every module (modgen from aaspire-tools, the line's specs)
 .\build-pi.ps1                            # ... for the Pi, into bin/forte-aarch64
 ```
 
